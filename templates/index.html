@@ -2,59 +2,174 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>薪資分布分析</title>
+  <title>薪資分布分析 | Salary Insight</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 30px; }
-    #salary-chart { width: 100%; height: 600px; }
-    #loading {
+    body {
+      font-family: "Noto Sans TC", "Helvetica Neue", sans-serif;
+      background-color: #FFF8F0; /* 淺橘背景 */
+      padding: 40px;
+    }
+    h1 {
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #FF8C00; /* 深橘標題 */
+    }
+    #loading-bar {
       display: none;
+      height: 4px;
+      background: linear-gradient(to right, #FFA500, #FF8C00); /* 漸層橘色 */
+      animation: loading 2s infinite;
+      transition: all 0.5s;
+    }
+    @keyframes loading {
+      0% { width: 0%; }
+      50% { width: 80%; }
+      100% { width: 100%; }
+    }
+    #salary-chart {
+      margin-top: 30px;
+    }
+    .input-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .input-area input {
+      width: 300px;
+    }
+    .keywords-area, .history-area {
       text-align: center;
       margin-top: 20px;
     }
-    #loading img {
-      width: 100px;
+    .keywords-area button, .history-area button {
+      margin: 5px;
+    }
+    .btn-primary {
+      background-color: #FFA500; /* 橘色按鈕 */
+      border-color: #FFA500;
+    }
+    .btn-primary:hover {
+      background-color: #FF8C00;
+      border-color: #FF8C00;
+    }
+    .btn-outline-secondary, .btn-outline-primary {
+      border-color: #FFA500;
+      color: #FFA500;
+    }
+    .btn-outline-secondary:hover, .btn-outline-primary:hover {
+      background-color: #FFA500;
+      color: white;
+    }
+    #download-btn {
+      margin-top: 20px;
+      display: none;
+      background-color: #FFA07A; /* 橙紅色按鈕 */
+      border: none;
+    }
+    #download-btn:hover {
+      background-color: #FF7F50;
+    }
+    /* LOGO效果 */
+    #logo-link {
+        display: flex;
+        align-items: center;
+    }
+
+    #logo-icon:hover {
+        filter: brightness(1.2); /* 滑鼠移過變亮 */
+    }
+
+    #logo-title {
+        font-size: 1.8rem;
+        color: #FF8C00;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+
+    /* 響應式調整：手機版Logo變小 */
+    @media (max-width: 768px) {
+        #logo-icon {
+        width: 30px;
+        height: 30px;
+        }
+        #logo-title {
+        font-size: 1.5rem;
+        }
     }
   </style>
 </head>
 <body>
+<div class="d-flex align-items-center mb-4">
+    <a href="/" id="logo-link" class="d-flex align-items-center text-decoration-none">
+        <svg id="logo-icon" width="40" height="40" viewBox="0 0 24 24" fill="#FFA500" xmlns="http://www.w3.org/2000/svg" style="transition: all 0.3s;">
+        <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8c1.85 0 3.55-.63 4.9-1.69l4.39 4.39 1.41-1.41-4.39-4.39C17.37 13.55 18 11.85 18 10c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+        <text x="6" y="15" font-size="8" fill="white" font-weight="bold">$</text>
+        </svg>
+        <h1 class="ms-2 mb-0" id="logo-title">Salary Insight</h1>
+    </a>
+</div>
+      
+<h1>104 人力銀行｜薪資分布分析</h1>
 
-<h2>104 人力銀行 薪資分布分析</h2>
-
-<label for="job-title">請輸入職缺關鍵字：</label>
-<input type="text" id="job-title" placeholder=".NET" />
-<button onclick="search()">搜尋</button>
-
-<!-- 🔥 加上這段 loading 畫面 -->
-<div id="loading">
-  <p>資料載入中，請稍後...</p>
-  <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading...">
+<div class="input-area">
+  <input type="text" id="job-title" class="form-control" placeholder="請輸入職缺關鍵字，例如 .NET">
+  <button class="btn btn-primary" onclick="search()">搜尋</button>
 </div>
 
+<!-- 熱門關鍵字 -->
+<div class="keywords-area">
+  <strong>熱門關鍵字：</strong>
+  <button class="btn btn-outline-secondary" onclick="quickSearch('.NET')">.NET</button>
+  <button class="btn btn-outline-secondary" onclick="quickSearch('Python')">Python</button>
+  <button class="btn btn-outline-secondary" onclick="quickSearch('Data Engineer')">Data Engineer</button>
+  <button class="btn btn-outline-secondary" onclick="quickSearch('前端工程師')">前端工程師</button>
+  <button class="btn btn-outline-secondary" onclick="quickSearch('系統分析師')">系統分析師</button>
+</div>
+
+<!-- 歷史搜尋 -->
+<div class="history-area" id="history-area"></div>
+
+<!-- Loading Bar -->
+<div id="loading-bar"></div>
+
+<!-- 圖表 -->
 <div id="salary-chart"></div>
 
-<script>
-function search() {
-  const title = document.getElementById("job-title").value || ".NET";
+<!-- 下載圖表按鈕 -->
+<div class="text-center">
+  <button id="download-btn" class="btn btn-success" onclick="downloadChart()">下載圖表</button>
+</div>
 
-  // 🔥 顯示 loading
-  document.getElementById("loading").style.display = "block";
-  document.getElementById("salary-chart").innerHTML = ""; // 清空舊圖
+<script>
+function search(titleInput=null) {
+  const title = titleInput || document.getElementById("job-title").value || ".NET";
+
+  document.getElementById("loading-bar").style.display = "block";
+  document.getElementById("salary-chart").innerHTML = "";
+  document.getElementById("download-btn").style.display = "none";
 
   fetch(`/search?title=${encodeURIComponent(title)}`)
     .then(response => response.json())
     .then(data => {
-      // 🔥 隱藏 loading
-      document.getElementById("loading").style.display = "none";
+      document.getElementById("loading-bar").style.display = "none";
 
       if (data.salaries.length === 0) {
-        alert("找不到相關職缺！");
+        alert("找不到相關職缺，請換個關鍵字試試！");
         return;
       }
       plotSalary(data.salaries, data.salary_type);
+
+      saveHistory(title);
+      showHistory();
     })
     .catch(error => {
-      document.getElementById("loading").style.display = "none";
+      document.getElementById("loading-bar").style.display = "none";
       alert("搜尋失敗，請稍後再試！");
       console.error(error);
     });
@@ -64,20 +179,55 @@ function plotSalary(salaries, title) {
   const trace = {
     x: salaries,
     type: 'histogram',
-    marker: {color: "skyblue"},
+    marker: {color: "#FFA07A"},
     xbins: {size: 5000}
   };
   const layout = {
-    title: `${title}職缺的平均薪資分布`,
+    title: `${title} 職缺的平均薪資分布`,
     xaxis: {title: "平均薪資 (元)"},
     yaxis: {title: "職缺數量"},
     bargap: 0.05
   };
   Plotly.newPlot('salary-chart', [trace], layout);
+  document.getElementById("download-btn").style.display = "inline-block";
 }
 
-// 預設載入 .NET
-search();
+function quickSearch(keyword) {
+  document.getElementById("job-title").value = keyword;
+  search(keyword);
+}
+
+function saveHistory(keyword) {
+  let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+  if (!history.includes(keyword)) {
+    history.push(keyword);
+    localStorage.setItem("searchHistory", JSON.stringify(history));
+  }
+}
+
+function showHistory() {
+  let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+  const area = document.getElementById("history-area");
+  area.innerHTML = "";
+  if (history.length > 0) {
+    area.innerHTML = "<strong>歷史搜尋：</strong>";
+    history.slice(-5).reverse().forEach(keyword => {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-outline-primary";
+      btn.textContent = keyword;
+      btn.onclick = () => quickSearch(keyword);
+      area.appendChild(btn);
+    });
+  }
+}
+
+function downloadChart() {
+  Plotly.downloadImage('salary-chart', {format: 'png', filename: 'salary_distribution'});
+}
+
+// 頁面初始
+showHistory();
+search(); // 預設載入 .NET
 </script>
 
 </body>
