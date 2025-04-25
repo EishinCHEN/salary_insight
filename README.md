@@ -5,7 +5,7 @@
 Salary Insight 是一個即時查詢 104 人力銀行職缺，並根據職缺薪資資訊製作互動式分布圖的小型網站。  
 使用者可以輸入關鍵字搜尋職缺，並透過直方圖快速了解該職缺市場的薪資分布狀況。
 
-Salary Insight is a web application that fetches job listings from Taiwan's 104 Job Bank based on keywords and visualizes salary distributions using interactive charts.
+Salary Insight is a web application that retrieves job listings from Taiwan's 104 Job Bank based on user-defined keywords and presents salary distributions through interactive data visualizations.
 
 ## Tech Stack | 使用技術
 
