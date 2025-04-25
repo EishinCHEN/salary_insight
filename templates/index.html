@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>薪資分布分析</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    #salary-chart { width: 100%; height: 600px; }
+    #loading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+    }
+    #loading img {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>104 人力銀行 薪資分布分析</h2>
+
+<label for="job-title">請輸入職缺關鍵字：</label>
+<input type="text" id="job-title" placeholder=".NET" />
+<button onclick="search()">搜尋</button>
+
+<!-- 🔥 加上這段 loading 畫面 -->
+<div id="loading">
+  <p>資料載入中，請稍後...</p>
+  <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading...">
+</div>
+
+<div id="salary-chart"></div>
+
+<script>
+function search() {
+  const title = document.getElementById("job-title").value || ".NET";
+
+  // 🔥 顯示 loading
+  document.getElementById("loading").style.display = "block";
+  document.getElementById("salary-chart").innerHTML = ""; // 清空舊圖
+
+  fetch(`/search?title=${encodeURIComponent(title)}`)
+    .then(response => response.json())
+    .then(data => {
+      // 🔥 隱藏 loading
+      document.getElementById("loading").style.display = "none";
+
+      if (data.salaries.length === 0) {
+        alert("找不到相關職缺！");
+        return;
+      }
+      plotSalary(data.salaries, data.salary_type);
+    })
+    .catch(error => {
+      document.getElementById("loading").style.display = "none";
+      alert("搜尋失敗，請稍後再試！");
+      console.error(error);
+    });
+}
+
+function plotSalary(salaries, title) {
+  const trace = {
+    x: salaries,
+    type: 'histogram',
+    marker: {color: "skyblue"},
+    xbins: {size: 5000}
+  };
+  const layout = {
+    title: `${title}職缺的平均薪資分布`,
+    xaxis: {title: "平均薪資 (元)"},
+    yaxis: {title: "職缺數量"},
+    bargap: 0.05
+  };
+  Plotly.newPlot('salary-chart', [trace], layout);
+}
+
+// 預設載入 .NET
+search();
+</script>
+
+</body>
+</html>
