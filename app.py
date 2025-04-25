@@ -24,5 +24,8 @@ def search():
     return jsonify({"salaries": salaries, "salary_type": keyword})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    port = os.environ.get("PORT")
+    if port:
+        app.run(host="0.0.0.0", port=port)
+    else:
+        app.run(debug=True)
