@@ -177,7 +177,7 @@ function search(titleInput=null) {
     document.getElementById("salary-chart").appendChild(waitingMessage);
   }, 30000); // 30秒後顯示提示
 
-  fetchWithTimeout(`/search?title=${encodeURIComponent(title)}`, { timeout: 60000 })  // 60秒 timeout
+  fetchWithTimeout(`/search?title=${encodeURIComponent(title)}`, { timeout: 150000 })  
     .then(response => response.json())
     .then(data => {
       clearTimeout(waitingTimer);
