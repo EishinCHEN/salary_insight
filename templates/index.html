@@ -147,6 +147,17 @@
 </div>
 
 <script>
+function fetchWithTimeout(resource, options = {}) {
+  const { timeout = 150000 } = options; 
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  return fetch(resource, {
+    ...options,
+    signal: controller.signal
+  }).finally(() => clearTimeout(id));
+}
+
 function search(titleInput=null) {
   const title = titleInput || document.getElementById("job-title").value || ".NET";
 
@@ -154,7 +165,7 @@ function search(titleInput=null) {
   document.getElementById("salary-chart").innerHTML = "";
   document.getElementById("download-btn").style.display = "none";
 
-  fetch(`/search?title=${encodeURIComponent(title)}`)
+  fetchWithTimeout(`/search?title=${encodeURIComponent(title)}`, { timeout: 60000 })  // 60秒
     .then(response => response.json())
     .then(data => {
       document.getElementById("loading-bar").style.display = "none";
@@ -170,7 +181,11 @@ function search(titleInput=null) {
     })
     .catch(error => {
       document.getElementById("loading-bar").style.display = "none";
-      alert("搜尋失敗，請稍後再試！");
+      if (error.name === 'AbortError') {
+        alert("請求超時，請稍後再試！");
+      } else {
+        alert("搜尋失敗，請稍後再試！");
+      }
       console.error(error);
     });
 }
