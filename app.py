@@ -2,8 +2,17 @@ from flask import Flask, render_template, request, jsonify
 from utils.crawler import fetch_104_jobs
 import numpy as np
 import os
+from config import DevConfig, PrdConfig
 
+# 判斷環境
+ENV = os.environ.get("ENV", "development")
+
+# 建立 app
 app = Flask(__name__)
+if ENV == "production":
+    app.config.from_object(PrdConfig)
+else:
+    app.config.from_object(DevConfig)
 
 @app.route("/")
 def index():
@@ -24,8 +33,4 @@ def search():
     return jsonify({"salaries": salaries, "salary_type": keyword})
 
 if __name__ == "__main__":
-    port = os.environ.get("PORT")
-    if port:
-        app.run(host="0.0.0.0", port=port)
-    else:
-        app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=app.config["DEBUG"])
