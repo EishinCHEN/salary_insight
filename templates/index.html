@@ -148,7 +148,7 @@
 
 <script>
 function fetchWithTimeout(resource, options = {}) {
-  const { timeout = 150000 } = options; 
+  const { timeout = 60000 } = options; 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
@@ -165,10 +165,25 @@ function search(titleInput=null) {
   document.getElementById("salary-chart").innerHTML = "";
   document.getElementById("download-btn").style.display = "none";
 
-  fetchWithTimeout(`/search?title=${encodeURIComponent(title)}`, { timeout: 60000 })  // 60秒
+  //「等待提示」定時器
+  const waitingMessage = document.createElement("div");
+  waitingMessage.id = "waiting-message";
+  waitingMessage.style.textAlign = "center";
+  waitingMessage.style.color = "#FF8C00";
+  waitingMessage.style.marginTop = "10px";
+  waitingMessage.innerHTML = "資料量較大，請耐心等候...";
+  
+  let waitingTimer = setTimeout(() => {
+    document.getElementById("salary-chart").appendChild(waitingMessage);
+  }, 30000); // 30秒後顯示提示
+
+  fetchWithTimeout(`/search?title=${encodeURIComponent(title)}`, { timeout: 60000 })  // 60秒 timeout
     .then(response => response.json())
     .then(data => {
+      clearTimeout(waitingTimer);
       document.getElementById("loading-bar").style.display = "none";
+      const oldMessage = document.getElementById("waiting-message");
+      if (oldMessage) oldMessage.remove();
 
       if (data.salaries.length === 0) {
         alert("找不到相關職缺，請換個關鍵字試試！");
@@ -180,7 +195,11 @@ function search(titleInput=null) {
       showHistory();
     })
     .catch(error => {
+      clearTimeout(waitingTimer);
       document.getElementById("loading-bar").style.display = "none";
+      const oldMessage = document.getElementById("waiting-message");
+      if (oldMessage) oldMessage.remove();
+
       if (error.name === 'AbortError') {
         alert("請求超時，請稍後再試！");
       } else {
