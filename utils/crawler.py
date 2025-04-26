@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-def fetch_104_jobs(keyword, max_pages=2):
+def fetch_104_jobs(keyword, max_pages=40):
     job_data = []
 
     for page in range(1, max_pages + 1):
